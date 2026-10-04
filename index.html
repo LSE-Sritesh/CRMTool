@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SEMBA CRM Tool</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* SEMBA brand theme, 1 October 2026. Every colour on the page comes from this list.
+   Since 4 October 2026 the CRM uses the same palette as the Project Management Tool with the roles swapped,
+   the rail is grey, the page ground is navy and taupe is the accent (buttons, main bars), so the two tools look different.
+   The page ground is navy, so anything that sits straight on the page uses --page-ink, not --ink. */
+:root{
+  /* brand */
+  --navy:#172E58; --navy-deep:#0F2044; --navy-pale:#E6E9F0; --grey:#C9CBCA; --taupe:#B5A08D; --taupe-ink:#7D6A57; --offwhite:#EFEFEF;
+  /* extra blues, only where a chart needs more than one */
+  --blue-light:#8A9BBE; --navy-mid:#4F6591;
+  /* surfaces and text */
+  --page:#172E58; --page-ink:#EFEFEF; --page-ink2:#C9CBCA; --bg:#FFFFFF; --bg2:#E6E9F0; --bg3:#D9DBDA; --line:#D9DBDA; --line2:#D9DBDA;
+  --ink:#172E58; --ink2:#4A5468; --ink3:#727B8D;
+  --accent:#B5A08D; --accent-hover:#7D6A57; --accent-ink:#172E58; --accent-hover-ink:#EFEFEF; --accent-soft:#E6E9F0;
+  --second:#172E58; --second-ink:#EFEFEF;
+  --rail:#C9CBCA; --rail-ink:#172E58; --rail-ink2:#172E58; --rail-hover:rgba(23,46,88,.1); --rail-on:#172E58; --rail-on-ink:#EFEFEF;
+  /* status */
+  --good:#1E9E5A; --good-soft:#E6F6EC; --warn:#E39B0A; --warn-soft:#FFF4DC; --warn-ink:#9A6600; --risk:#D93A3A; --risk-soft:#FDE8E8;
+  --info:#172E58; --info-soft:#E6E9F0;
+  --scrim:rgba(15,32,68,.4); --shadow:0 8px 28px rgba(23,46,88,.14); --radius:10px;
+  --body:"Manrope","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  color-scheme:light;
+}
+/* Dark is opt in only, by setting data-theme="dark" on <html>. It does not follow the system setting. */
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0B1220; --page-ink:#EEF1F7; --page-ink2:#B4BCCB; --bg:#141D33; --bg2:#1E2B48; --bg3:#2A3650; --line:#2A3650; --line2:#2A3650;
+  --ink:#EEF1F7; --ink2:#B4BCCB; --ink3:#8791A5;
+  --accent:#B5A08D; --accent-hover:#C9B7A4; --accent-ink:#172E58; --accent-hover-ink:#172E58; --accent-soft:#1E2B48;
+  --second:#4F6591; --second-ink:#EFEFEF;
+  --rail:#0A1224; --rail-ink:#EFEFEF; --rail-ink2:#C9CBCA; --rail-hover:rgba(239,239,239,.08); --rail-on:#B5A08D; --rail-on-ink:#172E58;
+  --taupe-ink:#C9B7A4; --warn-ink:#F0BE55;
+  --good-soft:#123324; --warn-soft:#3A2B0C; --risk-soft:#3D1717;
+  --info:#C9CBCA; --info-soft:#1E2B48;
+  --scrim:rgba(0,0,0,.5); --shadow:0 8px 28px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+h1,h2,h3{font-family:var(--body);margin:0;text-wrap:balance;line-height:1.15}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100%}
+/* rail */
+.rail{background:var(--rail);color:var(--rail-ink);padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh}
+.brand{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:8px 8px 4px;color:var(--rail-ink)}
+.logo{display:block;height:26px;width:auto}
+.brand b{display:block;font-size:14.5px;line-height:1.2;letter-spacing:.02em;text-wrap:balance}
+.brand small{display:block;font-size:11px;color:var(--rail-ink2);letter-spacing:.12em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;text-align:left;color:var(--rail-ink2);font-weight:500}
+.nav button svg{width:18px;height:18px;flex:none}
+.nav button:hover{background:var(--rail-hover);color:var(--rail-ink)}
+.nav button.on{background:var(--rail-on);color:var(--rail-on-ink);font-weight:600}
+.nav .cnt{margin-left:auto;font-size:11px;background:var(--rail-on);color:var(--rail-on-ink);padding:1px 7px;border-radius:99px}
+.nav button.on .cnt{background:var(--rail-on-ink);color:var(--rail-on)}
+.rail .foot{margin-top:auto;font-size:11.5px;color:var(--rail-ink2);line-height:1.5;padding:0 6px}
+.rail .foot b{color:var(--rail-ink);font-weight:600}
+.rail button:focus-visible{outline-color:var(--rail-ink)}
+/* main */
+.main{padding:22px 28px 60px;min-width:0}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.topbar h1{font-size:28px;font-weight:700;letter-spacing:-.01em;color:var(--page-ink)}
+.topbar .eyebrow,.card h3,.tile .lbl{font-family:var(--body)}
+.card h3{font-size:14px;font-weight:600}
+.tile .val{font-weight:600}
+.topbar .eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--page-ink2);margin-bottom:4px;font-weight:600}
+.btn{padding:8px 14px;border-radius:var(--radius);border:1px solid var(--line2);background:var(--bg);font-weight:500;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{border-color:var(--ink3)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:var(--accent-hover-ink)}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn svg{width:15px;height:15px}
+.view{display:none}.view.on{display:block}
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden}
+.tile .lbl{font-size:11.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.tile .val{font-family:var(--body);font-size:24px;font-weight:700;margin-top:6px;line-height:1.1}
+.tile .val small{font-size:14px;color:var(--ink3);font-weight:500;font-family:var(--body)}
+.tile .note{font-size:12px;color:var(--ink2);margin-top:6px}
+.tile.warn .val{color:var(--warn-ink)}.tile.risk .val{color:var(--risk)}.tile.good .val{color:var(--good)}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;align-items:start}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;min-width:0}
+.card h3{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card h3 span{font-family:var(--body);font-size:12px;color:var(--ink3);font-weight:400}
+/* bars */
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:130px 1fr 90px;align-items:center;gap:10px;font-size:13px}
+.bar .track{height:14px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:3px}
+.bar .fill.muted{background:var(--second)}
+.bar .n{text-align:right;color:var(--ink2)}
+.bar .k{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stack{display:grid;gap:16px;min-width:0}
+.rate{padding:12px 14px;border-radius:var(--radius);background:var(--bg2)}
+.rate .big{font-family:var(--body);font-size:28px;font-weight:700}
+.rate .lbl{font-size:12px;color:var(--ink2)}
+.rate .meter{height:6px;background:var(--bg3);border-radius:3px;margin-top:8px;overflow:hidden}.rate .meter i{display:block;height:100%;background:var(--accent)}
+.callout{font-size:12.5px;color:var(--ink2);margin-top:10px;padding:10px 12px;background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0}
+/* lists */
+.list{display:grid;gap:6px}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:9px 10px;border-radius:var(--radius);border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.row:hover{border-color:var(--line2);background:var(--bg2)}
+.row .dot{width:8px;height:8px;border-radius:50%;background:var(--ink3)}
+.row .dot.risk{background:var(--risk)}.row .dot.warn{background:var(--warn)}.row .dot.good{background:var(--good)}
+.row .t{font-weight:600}.row .s{font-size:12px;color:var(--ink2)}
+.row .r{font-size:12px;color:var(--ink2);text-align:right;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)}.pill.warn{background:var(--warn-soft);color:var(--warn-ink)}.pill.risk{background:var(--risk-soft);color:var(--risk)}.pill.info{background:var(--info-soft);color:var(--info)}.pill.grey{background:var(--bg3);color:var(--ink2)}
+/* kanban */
+.kb{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:12px;overflow-x:auto;padding-bottom:10px}
+.col{background:var(--bg2);border-radius:var(--radius);padding:10px;min-height:300px;display:flex;flex-direction:column;gap:8px}
+.col.over{outline:2px dashed var(--accent)}
+.col h3{font-size:13px;font-weight:700;display:flex;justify-content:space-between;padding:2px 4px 6px;text-transform:uppercase;letter-spacing:.05em}
+.col h3 span{color:var(--ink3);font-family:var(--body);font-weight:500;font-size:12px}
+.col .sum{font-size:11.5px;color:var(--ink3);padding:0 4px 4px;margin-top:-6px}
+.dealcard{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;cursor:grab;position:relative;border-left:4px solid var(--line2)}
+.dealcard.r-tender{border-left-color:var(--second)}.dealcard.r-direct{border-left-color:var(--accent)}
+.dealcard:hover{box-shadow:var(--shadow)}
+.dealcard.drag{opacity:.4}
+.dealcard .b{font-weight:600;font-size:13.5px}
+.dealcard .m{font-size:12px;color:var(--ink2);margin-top:2px}
+.dealcard .f{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px}
+.dealcard .v{font-weight:600}
+.dealcard .due{font-size:11px;color:var(--ink3)}.dealcard .due.late{color:var(--risk);font-weight:600}.dealcard .due.soon{color:var(--warn-ink);font-weight:600}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);margin-bottom:10px;flex-wrap:wrap;background:var(--bg);border-radius:var(--radius);padding:8px 12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+/* table */
+.tablewrap{overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:820px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+th.num,td.num{text-align:right}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--bg2)}
+td .b{font-weight:600}td .s{font-size:12px;color:var(--ink2)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters select,.filters input{padding:7px 10px;border:1px solid var(--line2);border-radius:var(--radius);background:var(--bg);color:var(--ink);font:inherit}
+/* drawer */
+.scrim{position:fixed;inset:0;background:var(--scrim);display:none;z-index:20}
+.scrim.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--bg);z-index:21;transform:translateX(100%);transition:transform .22s ease;overflow-y:auto;box-shadow:var(--shadow);padding:22px 24px calc(30px + env(safe-area-inset-bottom,0px));padding-top:calc(22px + env(safe-area-inset-top,0px))}
+.drawer.on{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.drawer .close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--bg2)}
+.drawer h2{font-size:21px;font-weight:700;margin-top:6px;padding-right:40px}
+.drawer .sub{color:var(--ink2);margin-top:4px;font-size:13px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:18px 0;font-size:13px}
+.kv div{padding:8px 0;border-bottom:1px solid var(--line)}
+.kv .k{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.kv .v{margin-top:2px;font-weight:500}
+.stagebar{display:flex;gap:3px;margin:12px 0 4px}
+.stagebar i{flex:1;height:6px;border-radius:2px;background:var(--bg3)}
+.stagebar i.done{background:var(--accent)}
+.stagebar i.lost{background:var(--risk)}
+.stagelbl{font-size:12px;color:var(--ink2);display:flex;justify-content:space-between}
+.next{background:var(--warn-soft);border-radius:var(--radius);padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:center;margin:14px 0}
+.next.late{background:var(--risk-soft)}
+.next b{font-weight:600}
+.section{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);font-weight:600;margin:18px 0 8px}
+.tl{display:grid;gap:8px}
+.tl div{display:grid;grid-template-columns:78px 1fr;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line)}
+.tl div span:first-child{color:var(--ink3);font-size:12px}
+.chk{display:grid;gap:6px;font-size:13px}
+.chk label{display:flex;gap:8px;align-items:center}
+.drawer textarea{width:100%;min-height:70px;padding:9px 10px;border:1px solid var(--line2);border-radius:var(--radius);font:inherit;background:var(--bg);color:var(--ink);resize:vertical}
+.aiout{background:var(--bg2);border-radius:var(--radius);padding:12px 14px;font-size:13px;white-space:pre-wrap;line-height:1.5;min-height:60px;border:1px solid var(--line)}
+.aiout.empty{color:var(--ink3);font-style:italic}
+.aitag{font-size:11px;color:var(--ink3);margin-top:6px}
+.aibtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+/* reports */
+.lost{display:grid;gap:6px;font-size:13px}
+.lost div{display:grid;grid-template-columns:1fr auto;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:var(--radius);font-size:13px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.handoff{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.handoff div{background:var(--bg2);border-radius:var(--radius);padding:8px;font-size:12px;text-align:center;color:var(--ink3)}
+.handoff div.done{background:var(--second);color:var(--second-ink);font-weight:600}
+.handoff div.now{background:var(--accent-soft);color:var(--ink);font-weight:600}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .rail{position:sticky;height:auto;flex-direction:row;align-items:center;gap:8px;padding:10px 16px;overflow-x:auto;z-index:5}
+  .rail .foot{display:none}
+  .brand{flex-direction:row;align-items:center;padding:0 8px 0 0}
+  .nav{flex-direction:row}.nav button{padding:7px 10px;white-space:nowrap}.nav button svg{display:none}
+  .main{padding:16px 16px 50px}
+  .grid2,.split{grid-template-columns:1fr}
+  .bar{grid-template-columns:90px 1fr 70px}
+  .kv{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SEMBA wordmark, same drawing as the Project Management Tool. Use it with <use href="#semba-logo">, never paste the paths twice. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="semba-logo" viewBox="48 42 252 58"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="butt" stroke-linejoin="miter"><path d="M84 50H66A11 11 0 0 0 66 72H78A9.5 9.5 0 0 1 78 91H56"/><path d="M126 50H102V91H126M110 71H128"/><path d="M140 93L160 49L180 93M158 93L178 49L198 93"/><path d="M216 50V91M216 50H232A10.5 10.5 0 0 1 232 71H216M234 71A10 10 0 0 1 234 91H216"/><path d="M254 93L275 49L296 93M266 79H289"/></g></symbol></svg>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><svg class="logo" viewBox="0 0 252 58" role="img" aria-label="SEMBA"><use href="#semba-logo"/></svg><div><b>CRM Tool</b><small>SEMBA Malaysia</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">Concept prototype for SEMBA Malaysia.<br>Built by <b>Lemon Sky AI Academy</b>.</div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section class="view on" id="v-dash">
+      <div class="topbar"><div><div class="eyebrow">Today</div><h1 id="todayLbl"></h1></div></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="grid2">
+        <div class="card"><h3>Open pipeline by stage <span>RM, unweighted</span></h3><div class="bars" id="stageBars"></div>
+          <div class="callout" id="stageNote"></div></div>
+        <div class="card"><h3>Win rate, last 12 months <span>by route</span></h3><div class="split" id="winRates"></div>
+          <div class="callout">Direct quotes and open tenders close at very different rates. Averaging them gives a forecast that describes neither, so this desk keeps them apart.</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>Needs attention <span>ranked by what it costs to ignore</span></h3><div class="list" id="attention"></div></div>
+        <div class="card"><h3>Openings in the next 90 days <span>the client's hard date</span></h3><div class="list" id="openings"></div></div>
+      </div>
+      <div class="card"><h3>Awarded jobs in handover to the project team <span>sales stays on the account until opening day</span></h3><div class="list" id="handoffs"></div></div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="view" id="v-pipe">
+      <div class="topbar"><div><div class="eyebrow">Pipeline</div><h1>Enquiry to award</h1></div></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Direct quote</span><span><i style="background:var(--second)"></i>Tender</span><span style="margin-left:auto">Drag a card to move it. Every move is logged.</span></div>
+      <div class="kb" id="kanban"></div>
+    </section>
+
+    <!-- DEALS -->
+    <section class="view" id="v-deals">
+      <div class="topbar"><div><div class="eyebrow">All deals</div><h1>Every enquiry, one list</h1></div></div>
+      <div class="filters">
+        <input id="q" placeholder="Search brand, mall, contact" type="search">
+        <select id="fStage"><option value="">All stages</option></select>
+        <select id="fRoute"><option value="">All routes</option><option>Direct quote</option><option>Tender</option></select>
+        <select id="fSector"><option value="">All sectors</option><option>Retail</option><option>F&amp;B</option><option>Office</option><option>Hospitality</option></select>
+        <select id="fOwner"><option value="">All owners</option></select>
+      </div>
+      <div class="tablewrap"><table id="tbl"><thead><tr>
+        <th data-k="brand">Brand / project</th><th data-k="location">Location</th><th data-k="sector">Sector</th><th data-k="route">Route</th><th data-k="stage">Stage</th><th class="num" data-k="value">Est. value</th><th data-k="nextDate">Next action</th><th data-k="owner">Owner</th>
+      </tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <!-- FOLLOW-UPS -->
+    <section class="view" id="v-followups">
+      <div class="topbar"><div><div class="eyebrow">Follow-ups</div><h1>What to chase today</h1></div></div>
+      <div class="grid2">
+        <div class="stack">
+          <div class="card"><h3>Overdue <span>the quote is going cold</span></h3><div class="list" id="fuLate"></div></div>
+          <div class="card"><h3>Quotes out with no reply for 14 days or more</h3><div class="list" id="fuStale"></div></div>
+        </div>
+        <div class="card"><h3>Due this week</h3><div class="list" id="fuSoon"></div></div>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="view" id="v-reports">
+      <div class="topbar"><div><div class="eyebrow">Reports</div><h1>Where work comes from, and why it is lost</h1></div></div>
+      <div class="grid2">
+        <div class="card"><h3>Source of enquiries <span>closed and open, count</span></h3><div class="bars" id="srcBars"></div>
+          <div class="callout">If most work comes from Japan HQ referrals and repeat brands, the sales job is account care, not cold outreach. The numbers should decide that, not opinion.</div></div>
+        <div class="card"><h3>Why deals were lost <span>last 12 months</span></h3><div class="lost" id="lostList"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h3>Sector mix of open pipeline <span>RM</span></h3><div class="bars" id="sectorBars"></div></div>
+        <div class="card"><h3>Days from enquiry to decision <span>closed deals, average</span></h3><div class="split" id="cycle"></div>
+          <div class="callout">Slow decisions are usually a mall approval or a Japan HQ sign-off. Knowing which lets the team chase the right person.</div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Deal details"></aside>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- sample data ---------- */
+const STAGES=["Enquiry","Site survey","Concept & budget","Proposal sent","Negotiation","Awarded","Lost"];
+const OPEN=STAGES.slice(0,5);
+const PROB={"Enquiry":.1,"Site survey":.2,"Concept & budget":.35,"Proposal sent":.5,"Negotiation":.7,"Awarded":1,"Lost":0};
+/* The sample was written for 23 September 2026. BASE is that day. TODAY is the real date, and the date engine below the sample data moves every sample date by the same number of days, so the story reads the same on any day. */
+const BASE="2026-09-23";
+const TODAY=(()=>{const n=new Date();return new Date(n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0"))})();
+const inDays=(n,from)=>{const x=from?new Date(from):new Date(TODAY);x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+const TODAY_LBL=TODAY.toLocaleDateString("en-GB",{weekday:"long",timeZone:"UTC"})+", "+TODAY.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"});
+const HAND=["Design","Mall & Bomba submission","Construction","Handover"];
+let deals=[
+ {id:1,brand:"Kohaku Ramen",group:"Kohaku Foods (Osaka)",contact:"Mr Takeda, Regional Manager",sector:"F&B",location:"Pavilion KL, L6",sqft:1450,route:"Direct quote",source:"Japan HQ referral",value:520000,stage:"Proposal sent",owner:"Farah",designer:"Wei Ling",next:"Call Mr Takeda on the revised kitchen layout price",nextDate:"2026-09-19",opening:"2026-12-05",sentDate:"2026-09-04",mall:true,bomba:true,notes:"Second outlet. First one at Mid Valley opened last year and they were happy with the finish. Pavilion fit-out guide caps shopfront cladding height, drawings adjusted.",log:[["2026-08-18","Enquiry via Japan HQ"],["2026-08-22","Site survey done, unit is 1,450 sq ft shell"],["2026-09-04","Proposal sent, RM 520k"],["2026-09-12","Client asked for a cheaper kitchen exhaust option"]]},
+ {id:2,brand:"Mori Bakery",group:"Mori Holdings (Tokyo)",contact:"Ms Sato, Overseas Expansion",sector:"F&B",location:"1 Utama, LG",sqft:980,route:"Direct quote",source:"Repeat client",value:310000,stage:"Negotiation",owner:"Farah",designer:"Aiman",next:"Send final BQ with revised counter finish",nextDate:"2026-09-24",opening:"2026-11-20",sentDate:"2026-09-10",mall:true,bomba:false,notes:"Third outlet with us. Wants the same counter as Sunway Pyramid but in oak veneer.",log:[["2026-08-25","Enquiry, repeat client"],["2026-08-28","Site survey"],["2026-09-10","Proposal sent, RM 310k"],["2026-09-18","Client wants counter finish changed, price to follow"]]},
+ {id:3,brand:"Aoi Optical",group:"Aoi Vision Co. (Nagoya)",contact:"Mr Lim, Country Manager",sector:"Retail",location:"Mid Valley Megamall, L2",sqft:1200,route:"Tender",source:"Mall management referral",value:430000,stage:"Proposal sent",owner:"Hafiz",designer:"Wei Ling",next:"Follow up, tender has closed, no word yet",nextDate:"2026-09-16",opening:"2027-01-15",sentDate:"2026-09-03",mall:true,bomba:false,notes:"Three contractors invited. Price sensitive, they mentioned a lower bid from a local firm.",log:[["2026-08-12","Tender invitation via mall leasing"],["2026-08-20","Site survey"],["2026-09-03","Tender submitted, RM 430k"]]},
+ {id:4,brand:"Hanabi Sushi",group:"Hanabi Dining Group (KL)",contact:"Ms Chong, Director",sector:"F&B",location:"TRX Exchange, L3",sqft:2100,route:"Direct quote",source:"Website enquiry",value:890000,stage:"Concept & budget",owner:"Hafiz",designer:"Aiman",next:"Present concept boards and budget range",nextDate:"2026-09-26",opening:"2027-02-01",sentDate:null,mall:true,bomba:true,notes:"New flagship. Owner wants an open robata counter, which means a Bomba submission for the extraction.",log:[["2026-09-01","Website enquiry"],["2026-09-08","Site survey, unit still bare shell"],["2026-09-15","Brief taken, concept in progress"]]},
+ {id:5,brand:"Tsumugi Living",group:"Tsumugi Interiors (Kyoto)",contact:"Mr Nakamura, GM Asia",sector:"Retail",location:"LaLaport BBCC, L1",sqft:3200,route:"Direct quote",source:"Japan HQ referral",value:1150000,stage:"Site survey",owner:"Farah",designer:"Wei Ling",next:"Site survey with mall M&E consultant",nextDate:"2026-09-25",opening:"2027-03-10",sentDate:null,mall:true,bomba:false,notes:"Homeware flagship, first store outside Japan. HQ decides, local team recommends.",log:[["2026-09-12","Enquiry via Japan HQ"],["2026-09-16","Intro call with Mr Nakamura"]]},
+ {id:6,brand:"Northline Logistics",group:"Northline Sdn Bhd",contact:"Ms Priya, Office Manager",sector:"Office",location:"Menara Bangsar South, 14F",sqft:6500,route:"Tender",source:"Referral",value:1400000,stage:"Negotiation",owner:"Hafiz",designer:"Aiman",next:"Meet on the variation list, they want to drop the pantry upgrade",nextDate:"2026-09-23",opening:"2026-12-15",sentDate:"2026-08-28",mall:false,bomba:true,notes:"Office relocation. Landlord fit-out period ends on the opening date, penalty after. Two bidders left.",log:[["2026-07-30","Tender invitation"],["2026-08-08","Site survey"],["2026-08-28","Tender submitted, RM 1.4m"],["2026-09-15","Shortlisted, price negotiation started"]]},
+ {id:7,brand:"Yuzu Skin",group:"Yuzu Cosmetics (Fukuoka)",contact:"Ms Tan, Brand Manager",sector:"Retail",location:"Sunway Pyramid, LG2",sqft:650,route:"Direct quote",source:"Repeat client",value:190000,stage:"Enquiry",owner:"Farah",designer:null,next:"Book site survey",nextDate:"2026-09-24",opening:"2026-11-28",sentDate:null,mall:true,bomba:false,notes:"Kiosk to inline upgrade. Tight timeline, mall wants opening before the year end sale.",log:[["2026-09-20","Enquiry by WhatsApp from Ms Tan"]]},
+ {id:8,brand:"Kisaragi Hotel",group:"Kisaragi Hospitality",contact:"Mr Ong, Project Director",sector:"Hospitality",location:"Bukit Bintang, lobby and lounge",sqft:4800,route:"Tender",source:"Consultant referral",value:2300000,stage:"Enquiry",owner:"Hafiz",designer:null,next:"Confirm whether we are on the tender list",nextDate:"2026-09-30",opening:"2027-06-01",sentDate:null,mall:false,bomba:true,notes:"Lobby refurbishment. Big, slow, and a QS on the client side. Low probability until we are on the list.",log:[["2026-09-18","Heard from the consultant that a tender is coming"]]},
+ {id:9,brand:"Sakura Dental",group:"Sakura Dental Clinics",contact:"Dr Wong",sector:"Office",location:"Bangsar Village II, L2",sqft:1800,route:"Direct quote",source:"Website enquiry",value:610000,stage:"Proposal sent",owner:"Farah",designer:"Aiman",next:"Chase Dr Wong, no reply since the proposal went out",nextDate:"2026-09-12",opening:"2027-01-05",sentDate:"2026-09-02",mall:true,bomba:false,notes:"Clinic fit-out, needs KKM compliance on the surgery layout. Slow to reply.",log:[["2026-08-10","Website enquiry"],["2026-08-19","Site survey"],["2026-09-02","Proposal sent, RM 610k"]]},
+ {id:10,brand:"Genki Mart",group:"Genki Retail (Tokyo)",contact:"Mr Fujita",sector:"Retail",location:"IOI City Mall, LG",sqft:5200,route:"Tender",source:"Japan HQ referral",value:1650000,stage:"Concept & budget",owner:"Hafiz",designer:"Wei Ling",next:"Budget estimate to HQ, they want it in JPY too",nextDate:"2026-09-29",opening:"2027-04-15",sentDate:null,mall:true,bomba:true,notes:"Japanese supermarket. Chillers and back of house mean heavy M&E. HQ will compare against a Japanese contractor.",log:[["2026-09-05","Enquiry via HQ"],["2026-09-11","Site survey with their M&E team"]]},
+ /* awarded, in handoff */
+ {id:11,brand:"Kohaku Ramen",group:"Kohaku Foods (Osaka)",contact:"Mr Takeda, Regional Manager",sector:"F&B",location:"Mid Valley Megamall, L3",sqft:1300,route:"Direct quote",source:"Japan HQ referral",value:480000,stage:"Awarded",owner:"Farah",designer:"Wei Ling",pm:"Kumar",hand:2,next:"Weekly site update to client",nextDate:"2026-09-26",opening:"2026-10-30",sentDate:"2026-07-01",mall:true,bomba:true,notes:"On site. Extraction ducting approved by Bomba.",log:[["2026-06-10","Enquiry"],["2026-07-01","Proposal sent"],["2026-07-15","Awarded, RM 480k"],["2026-08-20","Mall approval received"],["2026-09-10","Bomba approval received"],["2026-09-12","Construction started"]]},
+ {id:12,brand:"Mori Bakery",group:"Mori Holdings (Tokyo)",contact:"Ms Sato",sector:"F&B",location:"Sunway Pyramid, LG1",sqft:900,route:"Direct quote",source:"Repeat client",value:295000,stage:"Awarded",owner:"Farah",designer:"Aiman",pm:"Kumar",hand:3,next:"Handover checklist and defects walk",nextDate:"2026-09-25",opening:"2026-10-01",sentDate:"2026-06-15",mall:true,bomba:false,notes:"Snagging this week. Client happy, which is why 1 Utama came in.",log:[["2026-05-20","Enquiry, repeat"],["2026-06-15","Proposal sent"],["2026-06-25","Awarded"],["2026-09-15","Practical completion"]]},
+ {id:13,brand:"Umami Izakaya",group:"Umami Group (KL)",contact:"Mr Lee",sector:"F&B",location:"Publika, G",sqft:2000,route:"Direct quote",source:"Referral",value:740000,stage:"Awarded",owner:"Hafiz",designer:"Wei Ling",pm:"Sarah",hand:1,next:"Mall submission, waiting on mall M&E comments",nextDate:"2026-09-24",opening:"2026-12-20",sentDate:"2026-08-05",mall:true,bomba:true,notes:"Mall management returned comments on the shopfront glazing. Second submission going in.",log:[["2026-07-10","Enquiry"],["2026-08-05","Proposal sent"],["2026-08-20","Awarded, RM 740k"],["2026-09-08","First mall submission"],["2026-09-19","Comments received"]]},
+ {id:14,brand:"Tenjin Coworking",group:"Tenjin Spaces",contact:"Ms Nadia",sector:"Office",location:"KL Eco City, 9F",sqft:7800,route:"Tender",source:"Consultant referral",value:1900000,stage:"Awarded",owner:"Hafiz",designer:"Aiman",pm:"Sarah",hand:0,next:"Design development kickoff with client",nextDate:"2026-09-24",opening:"2027-01-30",sentDate:"2026-08-15",mall:false,bomba:true,notes:"Won on programme, not price. We promised 14 weeks.",log:[["2026-07-01","Tender invitation"],["2026-08-15","Tender submitted"],["2026-09-15","Awarded, RM 1.9m"]]},
+ /* lost, for the report */
+ {id:15,brand:"Blossom Tea",group:"Blossom Tea (Taipei)",contact:"Ms Hsu",sector:"F&B",location:"Pavilion KL, L4",sqft:700,route:"Tender",source:"Mall management referral",value:260000,stage:"Lost",lostReason:"Price, local bidder 18% lower",owner:"Hafiz",designer:"Aiman",next:"",nextDate:null,opening:null,sentDate:"2026-05-10",closed:"2026-06-02",enq:"2026-04-15",mall:true,bomba:false,notes:"",log:[["2026-06-02","Lost on price"]]},
+ {id:16,brand:"Raku Ceramics",group:"Raku Studio (Kyoto)",contact:"Mr Ito",sector:"Retail",location:"The Gardens Mall, L2",sqft:850,route:"Direct quote",source:"Japan HQ referral",value:300000,stage:"Lost",lostReason:"Client postponed, HQ paused expansion",owner:"Farah",designer:"Wei Ling",next:"",nextDate:null,opening:null,sentDate:"2026-03-20",closed:"2026-05-12",enq:"2026-02-28",mall:true,bomba:false,notes:"",log:[["2026-05-12","HQ paused Malaysia expansion"]]},
+ {id:17,brand:"Cedar Wealth",group:"Cedar Wealth Advisors",contact:"Mr Raj",sector:"Office",location:"Menara Prestige, 21F",sqft:3200,route:"Tender",source:"Website enquiry",value:720000,stage:"Lost",lostReason:"No reply after proposal, went quiet",owner:"Hafiz",designer:"Aiman",next:"",nextDate:null,opening:null,sentDate:"2026-04-22",closed:"2026-06-30",enq:"2026-03-30",mall:false,bomba:true,notes:"",log:[["2026-06-30","Marked lost, no response after 3 chasers"]]},
+ {id:18,brand:"Sora Eyewear",group:"Sora Optics (Tokyo)",contact:"Ms Abe",sector:"Retail",location:"Suria KLCC, L2",sqft:600,route:"Direct quote",source:"Repeat client",value:210000,stage:"Lost",lostReason:"Timeline, could not meet mall opening date",owner:"Farah",designer:"Wei Ling",next:"",nextDate:null,opening:null,sentDate:"2026-06-05",closed:"2026-06-20",enq:"2026-05-25",mall:true,bomba:false,notes:"",log:[["2026-06-20","Lost, mall date too tight for our programme"]]},
+];
+/* prior-year closed deals used only for the win rate figures */
+const HIST={ "Direct quote":{won:15,lost:6}, "Tender":{won:5,lost:9} };
+
+/* ---------- date engine ---------- */
+/* Moves every sample date forward by the days between BASE and today. Remove it only when real data replaces the sample, and keep TODAY. */
+const SHIFT=Math.round((TODAY-new Date(BASE))/86400000);
+deals.forEach(x=>{["nextDate","opening","sentDate","closed","enq"].forEach(k=>{if(x[k])x[k]=inDays(SHIFT,x[k])});x.log.forEach(l=>{l[0]=inDays(SHIFT,l[0])})});
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const rm=n=>n>=1e6?"RM "+(n/1e6).toFixed(2)+"m":"RM "+Math.round(n/1000)+"k";
+const rmFull=n=>"RM "+n.toLocaleString("en-MY");
+const d=s=>s?new Date(s):null;
+const days=(a,b)=>Math.round((d(a)-d(b))/86400000);
+const fmt=s=>{if(!s)return "";const x=d(s);return x.toLocaleDateString("en-GB",{day:"numeric",month:"short"})};
+const fmtL=s=>{if(!s)return "";const x=d(s);return x.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})};
+const routeCls=r=>r==="Tender"?"r-tender":"r-direct";
+const dueCls=s=>{if(!s)return "";const n=days(s,TODAY);return n<0?"late":n<=3?"soon":""};
+const dueTxt=s=>{if(!s)return "";const n=days(s,TODAY);return n<0?`${-n}d overdue`:n===0?"today":n===1?"tomorrow":`in ${n}d`};
+const isOpen=x=>OPEN.includes(x.stage);
+let toastT;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2200)}
+function logMove(x,msg){x.log.push([TODAY.toISOString().slice(0,10),msg])}
+
+/* ---------- nav ---------- */
+const VIEWS=[["dash","Dashboard","M3 13h8V3H3v10Zm10 8h8V11h-8v10ZM3 21h8v-6H3v6Zm10-12h8V3h-8v6Z"],["pipe","Pipeline","M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v7h-4z"],["deals","Deals","M4 6h16M4 12h16M4 18h16"],["followups","Follow-ups","M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"],["reports","Reports","M4 20V10M10 20V4M16 20v-7M22 20H2"]];
+function renderNav(){
+  const late=deals.filter(x=>isOpen(x)&&x.nextDate&&days(x.nextDate,TODAY)<0).length;
+  $("#nav").innerHTML=VIEWS.map(([k,l,p])=>`<button data-go="${k}" class="${cur===k?"on":""}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>${l}${k==="followups"&&late?`<span class="cnt">${late}</span>`:""}</button>`).join("");
+}
+let cur="dash";
+function go(k){cur=k;$$(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+k));renderNav();renderAll();window.scrollTo({top:0})}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
+
+/* ---------- dashboard ---------- */
+function renderDash(){
+  $("#todayLbl").textContent=TODAY_LBL;
+  const open=deals.filter(isOpen);
+  const pipe=open.reduce((a,x)=>a+x.value,0);
+  const wtd=open.reduce((a,x)=>a+x.value*PROB[x.stage],0);
+  const late=open.filter(x=>x.nextDate&&days(x.nextDate,TODAY)<0);
+  const stale=open.filter(x=>x.sentDate&&["Proposal sent"].includes(x.stage)&&days(TODAY.toISOString(),x.sentDate)>=14);
+  const won=deals.filter(x=>x.stage==="Awarded").reduce((a,x)=>a+x.value,0);
+  const soon=deals.filter(x=>x.stage==="Awarded"&&x.opening&&days(x.opening,TODAY)<=90).length;
+  $("#tiles").innerHTML=`
+   <div class="tile"><div class="lbl">Open pipeline</div><div class="val">${rm(pipe)}</div><div class="note">${open.length} live enquiries</div></div>
+   <div class="tile"><div class="lbl">Weighted forecast</div><div class="val">${rm(wtd)}</div><div class="note">by stage probability</div></div>
+   <div class="tile ${late.length?"risk":"good"}"><div class="lbl">Overdue follow-ups</div><div class="val">${late.length}</div><div class="note">${late.length?rm(late.reduce((a,x)=>a+x.value,0))+" waiting on us":"nothing overdue"}</div></div>
+   <div class="tile ${stale.length?"warn":""}"><div class="lbl">Quotes gone quiet</div><div class="val">${stale.length}</div><div class="note">sent 14+ days, no decision</div></div>
+   <div class="tile good"><div class="lbl">Awarded this year</div><div class="val">${rm(won)}</div><div class="note">${soon} opening within 90 days</div></div>`;
+  // stage bars
+  const max=Math.max(...OPEN.map(s=>open.filter(x=>x.stage===s).reduce((a,x)=>a+x.value,0)),1);
+  $("#stageBars").innerHTML=OPEN.map(s=>{const v=open.filter(x=>x.stage===s).reduce((a,x)=>a+x.value,0);const n=open.filter(x=>x.stage===s).length;
+    return `<div class="bar"><span class="k">${s}</span><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><span class="n">${rm(v)} <small>(${n})</small></span></div>`}).join("");
+  const ps=open.filter(x=>x.stage==="Proposal sent").reduce((a,x)=>a+x.value,0);
+  $("#stageNote").textContent=`${rm(ps)} is sitting at proposal stage. That is the money a follow-up call can move. Enquiry stage is big but early, so count it, do not bank it.`;
+  // win rates
+  $("#winRates").innerHTML=Object.entries(HIST).map(([r,h])=>{const p=Math.round(h.won/(h.won+h.lost)*100);
+    return `<div class="rate"><div class="big">${p}%</div><div class="lbl">${r} · ${h.won} won of ${h.won+h.lost}</div><div class="meter"><i style="width:${p}%"></i></div></div>`}).join("");
+  // attention
+  const att=open.map(x=>{let score=0,why=[];
+    if(x.nextDate&&days(x.nextDate,TODAY)<0){score+=3;why.push(`${-days(x.nextDate,TODAY)} days overdue`)}
+    if(x.sentDate&&x.stage==="Proposal sent"&&days(TODAY.toISOString(),x.sentDate)>=14){score+=2;why.push(`quote out ${days(TODAY.toISOString(),x.sentDate)} days`)}
+    if(x.opening&&days(x.opening,TODAY)<75&&x.stage!=="Awarded"){score+=2;why.push(`opens in ${days(x.opening,TODAY)} days, not yet awarded`)}
+    return {x,score:score*Math.log10(x.value),why}}).filter(a=>a.score>0).sort((a,b)=>b.score-a.score).slice(0,5);
+  $("#attention").innerHTML=att.length?att.map(({x,why})=>`<div class="row" data-open="${x.id}"><span class="dot ${why[0].includes("overdue")?"risk":"warn"}"></span><div><div class="t">${x.brand} <span class="pill grey">${x.stage}</span></div><div class="s">${why.join(" · ")}</div></div><div class="r">${rm(x.value)}<br>${x.owner}</div></div>`).join(""):`<div class="s">Nothing needs chasing. Enjoy it.</div>`;
+  // openings
+  const ops=deals.filter(x=>x.opening&&x.stage!=="Lost"&&days(x.opening,TODAY)<=90).sort((a,b)=>d(a.opening)-d(b.opening));
+  $("#openings").innerHTML=ops.map(x=>`<div class="row" data-open="${x.id}"><span class="dot ${x.stage==="Awarded"?"good":days(x.opening,TODAY)<60?"risk":"warn"}"></span><div><div class="t">${x.brand}</div><div class="s">${x.location} · ${x.stage==="Awarded"?"in "+HAND[x.hand]:x.stage}</div></div><div class="r"><b>${fmt(x.opening)}</b><br>${days(x.opening,TODAY)} days</div></div>`).join("");
+  // handoffs
+  $("#handoffs").innerHTML=deals.filter(x=>x.stage==="Awarded").sort((a,b)=>d(a.opening)-d(b.opening)).map(x=>`<div class="row" data-open="${x.id}" style="grid-template-columns:1fr 2fr auto"><div><div class="t">${x.brand}</div><div class="s">${x.location} · PM ${x.pm}</div></div><div class="handoff" style="margin:0">${HAND.map((h,i)=>`<div class="${i<x.hand?"done":i===x.hand?"now":""}">${h}</div>`).join("")}</div><div class="r">${rm(x.value)}<br>opens ${fmt(x.opening)}</div></div>`).join("");
+}
+
+/* ---------- kanban ---------- */
+function renderKanban(){
+  const cols=STAGES.filter(s=>s!=="Lost");
+  $("#kanban").innerHTML=cols.map(s=>{const items=deals.filter(x=>x.stage===s);const v=items.reduce((a,x)=>a+x.value,0);
+    return `<div class="col" data-stage="${s}"><h3>${s}<span>${items.length}</span></h3><div class="sum">${rm(v)} · ${Math.round(PROB[s]*100)}% likely</div>${items.map(x=>`
+     <div class="dealcard ${routeCls(x.route)}" draggable="true" data-id="${x.id}" data-open="${x.id}"><div class="b">${x.brand}</div><div class="m">${x.location}</div><div class="m">${x.sqft.toLocaleString()} sq ft · ${x.sector}</div>
+       <div class="f"><span class="v">${rm(x.value)}</span><span class="due ${dueCls(x.nextDate)}">${x.stage==="Awarded"?HAND[x.hand]:dueTxt(x.nextDate)}</span></div></div>`).join("")}</div>`}).join("");
+  let dragId=null;
+  $$(".dealcard").forEach(c=>{c.addEventListener("dragstart",e=>{dragId=+c.dataset.id;c.classList.add("drag");e.dataTransfer.effectAllowed="move"});c.addEventListener("dragend",()=>c.classList.remove("drag"))});
+  $$(".col").forEach(col=>{col.addEventListener("dragover",e=>{e.preventDefault();col.classList.add("over")});col.addEventListener("dragleave",()=>col.classList.remove("over"));
+    col.addEventListener("drop",e=>{e.preventDefault();col.classList.remove("over");const x=deals.find(z=>z.id===dragId);if(!x||x.stage===col.dataset.stage)return;const from=x.stage;x.stage=col.dataset.stage;
+      if(x.stage==="Proposal sent"&&!x.sentDate)x.sentDate=TODAY.toISOString().slice(0,10);
+      if(x.stage==="Awarded"){x.hand=0;x.pm=x.pm||"Unassigned";x.next="Handover meeting with project team";x.nextDate=inDays(2)}
+      logMove(x,`Moved from ${from} to ${x.stage}`);toast(`${x.brand} moved to ${x.stage}`);renderAll()})});
+}
+
+/* ---------- deals table ---------- */
+let sortK="nextDate",sortD=1;
+function renderTable(){
+  const fs=$("#fStage");if(fs.options.length===1)STAGES.forEach(s=>fs.add(new Option(s,s)));
+  const fo=$("#fOwner");if(fo.options.length===1)[...new Set(deals.map(x=>x.owner))].forEach(o=>fo.add(new Option(o,o)));
+  const q=$("#q").value.toLowerCase();
+  let rows=deals.filter(x=>(!q||[x.brand,x.location,x.contact,x.group].join(" ").toLowerCase().includes(q))&&(!fs.value||x.stage===fs.value)&&(!$("#fRoute").value||x.route===$("#fRoute").value)&&(!$("#fSector").value||x.sector===$("#fSector").value)&&(!fo.value||x.owner===fo.value));
+  rows.sort((a,b)=>{let A=a[sortK],B=b[sortK];if(sortK==="stage"){A=STAGES.indexOf(A);B=STAGES.indexOf(B)}if(A==null)return 1;if(B==null)return -1;return (A>B?1:A<B?-1:0)*sortD});
+  $("#tbl tbody").innerHTML=rows.map(x=>`<tr data-open="${x.id}"><td><div class="b">${x.brand}</div><div class="s">${x.group}</div></td><td>${x.location}<div class="s">${x.sqft.toLocaleString()} sq ft</div></td><td>${x.sector}</td><td>${x.route}</td><td><span class="pill ${x.stage==="Awarded"?"good":x.stage==="Lost"?"risk":x.stage==="Negotiation"||x.stage==="Proposal sent"?"info":"grey"}">${x.stage}</span></td><td class="num">${rmFull(x.value)}</td><td>${x.stage==="Lost"?`<span class="s">${x.lostReason}</span>`:`<div>${x.next}</div><div class="s ${dueCls(x.nextDate)==="late"?"":""}" style="${dueCls(x.nextDate)==="late"?"color:var(--risk);font-weight:600":""}">${fmt(x.nextDate)} · ${dueTxt(x.nextDate)}</div>`}</td><td>${x.owner}</td></tr>`).join("");
+}
+["#q","#fStage","#fRoute","#fSector","#fOwner"].forEach(s=>$(s).addEventListener("input",renderTable));
+$("#tbl thead").addEventListener("click",e=>{const th=e.target.closest("th");if(!th)return;if(sortK===th.dataset.k)sortD*=-1;else{sortK=th.dataset.k;sortD=1}renderTable()});
+
+/* ---------- follow-ups ---------- */
+function renderFollow(){
+  const open=deals.filter(x=>isOpen(x)||x.stage==="Awarded");
+  const row=x=>`<div class="row" data-open="${x.id}"><span class="dot ${dueCls(x.nextDate)==="late"?"risk":"warn"}"></span><div><div class="t">${x.brand} <span class="pill grey">${x.stage}</span></div><div class="s">${x.next}</div></div><div class="r"><b>${fmt(x.nextDate)}</b><br>${dueTxt(x.nextDate)} · ${x.owner}</div></div>`;
+  const late=open.filter(x=>x.nextDate&&days(x.nextDate,TODAY)<0).sort((a,b)=>d(a.nextDate)-d(b.nextDate));
+  const soon=open.filter(x=>x.nextDate&&days(x.nextDate,TODAY)>=0&&days(x.nextDate,TODAY)<=7).sort((a,b)=>d(a.nextDate)-d(b.nextDate));
+  $("#fuLate").innerHTML=late.map(row).join("")||`<div class="s">Nothing overdue.</div>`;
+  $("#fuSoon").innerHTML=soon.map(row).join("")||`<div class="s">Nothing due this week.</div>`;
+  const stale=deals.filter(x=>x.stage==="Proposal sent"&&x.sentDate&&days(TODAY.toISOString(),x.sentDate)>=14);
+  $("#fuStale").innerHTML=stale.map(x=>`<div class="row" data-open="${x.id}"><span class="dot warn"></span><div><div class="t">${x.brand}</div><div class="s">${x.route} · sent ${fmtL(x.sentDate)} · ${x.contact}</div></div><div class="r">${rm(x.value)}<br><b>${days(TODAY.toISOString(),x.sentDate)} days</b> silent</div></div>`).join("")||`<div class="s">No quotes waiting.</div>`;
+}
+
+/* ---------- reports ---------- */
+function renderReports(){
+  const src={};deals.forEach(x=>src[x.source]=(src[x.source]||0)+1);const smax=Math.max(...Object.values(src));
+  $("#srcBars").innerHTML=Object.entries(src).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="bar"><span class="k">${k}</span><div class="track"><div class="fill" style="width:${v/smax*100}%"></div></div><span class="n">${v}</span></div>`).join("");
+  const lost=deals.filter(x=>x.stage==="Lost");
+  $("#lostList").innerHTML=lost.map(x=>`<div><span><b style="font-weight:600">${x.brand}</b> <span class="s" style="color:var(--ink2)">${x.lostReason}</span></span><span style="color:var(--ink2)">${rm(x.value)}</span></div>`).join("")+`<div style="border:0;padding-top:10px"><span style="color:var(--ink2)">Lost to price, ${lost.filter(x=>/price/i.test(x.lostReason)).length} of ${lost.length}. Lost to silence, ${lost.filter(x=>/reply|quiet/i.test(x.lostReason)).length} of ${lost.length}. Silence is the one a CRM fixes.</span><span></span></div>`;
+  const open=deals.filter(isOpen);const sec={};open.forEach(x=>sec[x.sector]=(sec[x.sector]||0)+x.value);const secmax=Math.max(...Object.values(sec));
+  $("#sectorBars").innerHTML=Object.entries(sec).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="bar"><span class="k">${k}</span><div class="track"><div class="fill muted" style="width:${v/secmax*100}%"></div></div><span class="n">${rm(v)}</span></div>`).join("");
+  const closed=deals.filter(x=>x.stage==="Lost"&&x.enq&&x.closed);
+  const byRoute={};closed.forEach(x=>{(byRoute[x.route]=byRoute[x.route]||[]).push(days(x.closed,x.enq))});
+  const avg=a=>Math.round(a.reduce((s,n)=>s+n,0)/a.length);
+  $("#cycle").innerHTML=Object.entries(byRoute).map(([r,a])=>`<div class="rate"><div class="big">${avg(a)}<small style="font-size:14px;color:var(--ink3)"> days</small></div><div class="lbl">${r} · ${a.length} deals</div></div>`).join("")+`<div class="rate"><div class="big">${avg(closed.map(x=>days(x.closed,x.enq)))}<small style="font-size:14px;color:var(--ink3)"> days</small></div><div class="lbl">All closed</div></div>`;
+}
+
+/* ---------- drawer ---------- */
+let curDeal=null;
+function openDeal(id){
+  const x=deals.find(z=>z.id===id);if(!x)return;curDeal=x;
+  const si=STAGES.indexOf(x.stage);
+  const late=x.nextDate&&days(x.nextDate,TODAY)<0;
+  $("#drawer").innerHTML=`
+   <button class="close" id="dclose" aria-label="Close">✕</button>
+   <div class="eyebrow" style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:600">${x.route} · ${x.sector}</div>
+   <h2>${x.brand}</h2><div class="sub">${x.group} · ${x.contact}</div>
+   <div class="stagebar">${OPEN.concat("Awarded").map((s,i)=>`<i class="${x.stage==="Lost"?"lost":i<=si?"done":""}"></i>`).join("")}</div>
+   <div class="stagelbl"><span>${x.stage==="Lost"?"Lost, "+x.lostReason:x.stage}</span><span>${Math.round(PROB[x.stage]*100)}% likely · ${rmFull(x.value)}</span></div>
+   ${x.stage==="Awarded"?`<div class="section">Handover to project team · PM ${x.pm}</div><div class="handoff">${HAND.map((h,i)=>`<div class="${i<x.hand?"done":i===x.hand?"now":""}">${h}</div>`).join("")}</div>`:""}
+   ${x.next?`<div class="next ${late?"late":""}"><span>${late?"⚠":"→"}</span><div><b>Next.</b> ${x.next}<br><span style="font-size:12px;color:var(--ink2)">${fmtL(x.nextDate)} · ${dueTxt(x.nextDate)} · ${x.owner}</span></div></div>`:""}
+   <div class="kv">
+     <div><div class="k">Location</div><div class="v">${x.location}</div></div>
+     <div><div class="k">Unit size</div><div class="v">${x.sqft.toLocaleString()} sq ft · ${rmFull(Math.round(x.value/x.sqft))} psf</div></div>
+     <div><div class="k">Client opening date</div><div class="v">${x.opening?fmtL(x.opening)+" · "+days(x.opening,TODAY)+" days":"Not set"}</div></div>
+     <div><div class="k">Source</div><div class="v">${x.source}</div></div>
+     <div><div class="k">Sales owner</div><div class="v">${x.owner}</div></div>
+     <div><div class="k">Designer</div><div class="v">${x.designer||"Not assigned"}</div></div>
+     <div><div class="k">Proposal sent</div><div class="v">${x.sentDate?fmtL(x.sentDate)+" · "+days(TODAY.toISOString(),x.sentDate)+" days ago":"Not yet"}</div></div>
+     <div><div class="k">Approvals needed</div><div class="v">${[x.mall?"Mall management":null,x.bomba?"Bomba":null].filter(Boolean).join(", ")||"None flagged"}</div></div>
+   </div>
+   <div class="section">Notes</div><div style="font-size:13px;color:var(--ink2)">${x.notes||"No notes yet."}</div>
+   <div class="section">Ask the assistant</div>
+   <div class="aibtns"><button class="btn sm" data-ai="chase">Draft a follow-up</button><button class="btn sm" data-ai="brief">Brief me before the call</button><button class="btn sm" data-ai="risk">What could go wrong</button></div>
+   <div class="aiout empty" id="aiout">Pick one. Drafts use the deal's own notes and history.</div><div class="aitag" id="aitag"></div>
+   <div class="section">Log a touch</div>
+   <textarea id="note" placeholder="Called Mr Takeda, he will confirm by Friday"></textarea>
+   <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn sm primary" id="addNote">Add to history</button>
+     ${isOpen(x)?`<select id="mv" class="btn sm"><option value="">Move stage…</option>${STAGES.filter(s=>s!==x.stage).map(s=>`<option>${s}</option>`).join("")}</select>`:""}
+     ${x.stage==="Awarded"&&x.hand<3?`<button class="btn sm" id="adv">Advance to ${HAND[x.hand+1]}</button>`:""}</div>
+   <div class="section">History</div>
+   <div class="tl">${[...x.log].reverse().map(([dt,m])=>`<div><span>${fmt(dt)}</span><span>${m}</span></div>`).join("")}</div>`;
+  $("#drawer").classList.add("on");$("#scrim").classList.add("on");
+  $("#dclose").onclick=closeDrawer;
+  $("#addNote").onclick=()=>{const v=$("#note").value.trim();if(!v)return;x.log.push([TODAY.toISOString().slice(0,10),v]);toast("Logged");openDeal(x.id);renderAll()};
+  const mv=$("#mv");if(mv)mv.onchange=()=>{if(!mv.value)return;const from=x.stage;x.stage=mv.value;if(x.stage==="Lost"){x.lostReason="Reason not recorded yet"}if(x.stage==="Awarded"){x.hand=0;x.pm=x.pm||"Unassigned"}if(x.stage==="Proposal sent"&&!x.sentDate)x.sentDate=TODAY.toISOString().slice(0,10);logMove(x,`Moved from ${from} to ${x.stage}`);toast(`Moved to ${x.stage}`);openDeal(x.id);renderAll()};
+  const adv=$("#adv");if(adv)adv.onclick=()=>{x.hand++;logMove(x,`Handover advanced to ${HAND[x.hand]}`);openDeal(x.id);renderAll()};
+  $$("[data-ai]").forEach(b=>b.onclick=()=>runAI(b.dataset.ai,x));
+}
+function closeDrawer(){$("#drawer").classList.remove("on");$("#scrim").classList.remove("on")}
+$("#scrim").onclick=closeDrawer;
+document.addEventListener("click",e=>{const o=e.target.closest("[data-open]");if(o&&!e.target.closest("[data-ai]"))openDeal(+o.dataset.open)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});
+
+/* ---------- AI assistant ---------- */
+let samplePromise=null;
+function getSample(){if(!samplePromise)samplePromise=(window.claude&&window.claude.use)?window.claude.use("sample").catch(()=>null):Promise.resolve(null);return samplePromise}
+function dealText(x){return `Brand ${x.brand} (${x.group}). Contact ${x.contact}. Sector ${x.sector}. Location ${x.location}, ${x.sqft} sq ft. Route ${x.route}. Source ${x.source}. Estimated value ${rmFull(x.value)}. Stage ${x.stage}. Sales owner ${x.owner}. Designer ${x.designer||"none"}. Proposal sent ${x.sentDate||"not yet"}. Client opening date ${x.opening||"not set"}. Approvals needed ${[x.mall?"mall management":null,x.bomba?"Bomba":null].filter(Boolean).join(", ")||"none"}. Next action ${x.next||"none"} due ${x.nextDate||"n/a"}. Notes ${x.notes||"none"}. History ${x.log.map(l=>l[0]+" "+l[1]).join("; ")}. Today is ${TODAY_LBL}.`}
+const PROMPTS={
+ chase:x=>`You are the sales assistant at SEMBA Malaysia, a Japanese founded interior design and fit-out contractor in Kuala Lumpur. Write a short, warm follow-up email in plain English to the contact below about the outstanding proposal. Reference one specific detail from the notes or history so it does not read as a template. Ask for one clear next step. Under 120 words. No subject line, no placeholders, sign off as ${x.owner}, SEMBA Malaysia.\n\nDeal record.\n${dealText(x)}`,
+ brief:x=>`You are the sales assistant at SEMBA Malaysia, a fit-out contractor in Kuala Lumpur. Give ${x.owner} a call briefing for this deal in five short bullet points. Cover where it stands, what the client last asked for, what we should ask them, the one number that matters, and the deadline pressure. Plain English, no headings.\n\nDeal record.\n${dealText(x)}`,
+ risk:x=>`You are an experienced fit-out sales manager in Malaysia. For the deal below list the three most likely reasons it slips or is lost, each with one sentence on what to do this week about it. Consider mall management and Bomba approvals, the client's opening date, price pressure, Japan HQ sign-off, and silence after a proposal. Plain English, numbered 1 to 3.\n\nDeal record.\n${dealText(x)}`
+};
+/* fallback drafts so the demo works without model access */
+const FALLBACK={
+ chase:x=>`Hi ${x.contact.split(",")[0]},\n\nHope the week is going well. I wanted to check in on the ${x.location.split(",")[0]} proposal we sent on ${fmtL(x.sentDate)||"recently"}.${x.notes?" "+x.notes.split(".")[0]+", so we have kept that in mind.":""}\n\nIf it helps, I can walk your team through the numbers in 20 minutes this week, or send a revised option if anything has changed on your side.${x.opening?" With the "+fmtL(x.opening)+" opening in view, locking the programme early keeps the mall and Bomba submissions off the critical path.":""}\n\nWould Thursday or Friday suit for a quick call?\n\nBest regards,\n${x.owner}\nSEMBA Malaysia`,
+ brief:x=>`• ${x.brand} is at ${x.stage}, ${rmFull(x.value)} for ${x.sqft.toLocaleString()} sq ft at ${x.location}.\n• Last thing they raised. ${x.log[x.log.length-1][1]}.\n• Ask them who signs off and when${x.source.includes("HQ")?", because HQ in Japan is in the loop":""}.\n• The number that matters. ${rmFull(Math.round(x.value/x.sqft))} per sq ft, keep the conversation on value per sq ft not total.\n• ${x.opening?"Opening is "+fmtL(x.opening)+", "+days(x.opening,TODAY)+" days away. Approvals alone take 2 to 4 weeks, so a decision this week is not optional.":"No opening date set. Get one, it is the only lever that creates urgency."}`,
+ risk:x=>`1. Silence after the proposal. ${x.sentDate?"It has been "+days(TODAY.toISOString(),x.sentDate)+" days.":"Not sent yet, so set the follow-up date the day it goes out."} Call, do not email, and ask for a decision date.\n2. Approvals eat the programme. ${x.mall||x.bomba?"This unit needs "+[x.mall?"mall management":null,x.bomba?"Bomba":null].filter(Boolean).join(" and ")+" sign-off, usually 2 to 4 weeks.":"No approvals flagged, confirm that with the landlord."} Start drawings for submission before award if the client will pay a design fee.\n3. ${x.route==="Tender"?"Price. Tenders close at roughly a third for us. Find out who else is bidding and sell the programme and finish quality, not the number.":x.source.includes("HQ")?"Japan HQ sign-off. The local contact recommends, Tokyo decides. Get the proposal into a form HQ can read, and ask when their next approval meeting is.":"Scope creep before award. The client is already asking for changes. Price every change, even at proposal stage, so the award value is the real value."}`
+};
+async function runAI(kind,x){
+  const out=$("#aiout"),tag=$("#aitag");out.classList.remove("empty");out.textContent="Thinking…";tag.textContent="";
+  const sample=await getSample();
+  if(sample){
+    try{const r=await sample(PROMPTS[kind](x),{modelTier:"quick",onText:({text})=>{out.textContent=text}});out.textContent=r.text;tag.textContent="Drafted by Claude from this deal's record. Read it before you send it.";return}
+    catch(e){ if(e&&e.code==="not_granted"){/* fall through to template */} }
+  }
+  out.textContent=FALLBACK[kind](x);tag.textContent="Drafted from the deal record using a built-in template. With model access this is written fresh each time.";
+}
+
+function renderAll(){renderNav();renderDash();renderKanban();renderTable();renderFollow();renderReports()}
+renderAll();
+</script>
+</body>
+</html>
