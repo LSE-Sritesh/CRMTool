@@ -100,7 +100,11 @@ h1,h2,h3{font-family:var(--body);margin:0;text-wrap:balance;line-height:1.15}
 .bar .n{text-align:right;color:var(--ink2)}
 .bar .k{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.stack{display:grid;gap:16px;min-width:0}
+.stack{display:grid;gap:16px;min-width:0;align-content:start}
+.grid2.even{align-items:stretch}
+.row[hidden]{display:none}
+.card h3 .btn{font-size:12px;font-weight:500;padding:3px 10px;align-self:center;margin:-6px 0}
+.card h3 span{margin-left:auto}
 .grid4{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:16px}
 .split.three{grid-template-columns:repeat(3,1fr)}
 .rate{padding:12px 14px;border-radius:var(--radius);background:var(--bg2)}
@@ -220,15 +224,15 @@ td .b{font-weight:600}td .s{font-size:12px;color:var(--ink2)}
     <section class="view on" id="v-dash">
       <div class="topbar"><div><div class="eyebrow">Today</div><h1 id="todayLbl"></h1></div></div>
       <div class="tiles" id="tiles"></div>
-      <div class="grid2">
+      <div class="grid2 even">
         <div class="card"><h3>Open pipeline by stage <span>RM, unweighted</span></h3><div class="bars" id="stageBars"></div>
           <div class="callout" id="stageNote"></div></div>
         <div class="card"><h3>Win rate, last 12 months <span>by route</span></h3><div class="split" id="winRates"></div>
           <div class="callout">Direct quotes and open tenders close at very different rates. Averaging them gives a forecast that describes neither, so this desk keeps them apart.</div></div>
       </div>
-      <div class="grid2">
+      <div class="grid2 even">
         <div class="card"><h3>Needs attention <span>ranked by what it costs to ignore</span></h3><div class="list" id="attention"></div></div>
-        <div class="card"><h3>Openings in the next 90 days <span>the client's hard date</span></h3><div class="list" id="openings"></div></div>
+        <div class="card"><h3>Openings in the next 90 days <span>the client's hard date</span><button class="btn sm" id="opMore" hidden></button></h3><div class="list" id="openings"></div></div>
       </div>
       <div class="card"><h3>Awarded jobs in handover to the project team <span>sales stays on the account until opening day</span></h3><div class="list" id="handoffs"></div></div>
     </section>
@@ -258,12 +262,12 @@ td .b{font-weight:600}td .s{font-size:12px;color:var(--ink2)}
     <!-- FOLLOW-UPS -->
     <section class="view" id="v-followups">
       <div class="topbar"><div><div class="eyebrow">Follow-ups</div><h1>What to chase today</h1></div></div>
-      <div class="grid2">
-        <div class="stack">
+      <div class="grid2 even">
+        <div class="stack" id="fuStack">
           <div class="card"><h3>Overdue <span>the quote is going cold</span></h3><div class="list" id="fuLate"></div></div>
           <div class="card"><h3>Quotes out with no reply for 14 days or more</h3><div class="list" id="fuStale"></div></div>
         </div>
-        <div class="card"><h3>Due this week</h3><div class="list" id="fuSoon"></div></div>
+        <div class="card"><h3>Due this week <button class="btn sm" id="fuMore" hidden></button></h3><div class="list" id="fuSoon"></div></div>
       </div>
     </section>
 
@@ -387,6 +391,7 @@ function renderDash(){
   // openings
   const ops=deals.filter(x=>x.opening&&x.stage!=="Lost"&&days(x.opening,TODAY)<=90).sort((a,b)=>d(a.opening)-d(b.opening));
   $("#openings").innerHTML=ops.map(x=>`<div class="row" data-open="${x.id}"><span class="dot ${x.stage==="Awarded"?"good":days(x.opening,TODAY)<60?"risk":"warn"}"></span><div><div class="t">${x.brand}</div><div class="s">${x.location} · ${x.stage==="Awarded"?"in "+HAND[x.hand]:x.stage}</div></div><div class="r"><b>${fmt(x.opening)}</b><br>${days(x.opening,TODAY)} days</div></div>`).join("");
+  fit("ops");
   // handoffs
   $("#handoffs").innerHTML=deals.filter(x=>x.stage==="Awarded").sort((a,b)=>d(a.opening)-d(b.opening)).map(x=>`<div class="row" data-open="${x.id}" style="grid-template-columns:1fr 2fr auto"><div><div class="t">${x.brand}</div><div class="s">${x.location} · PM ${x.pm}</div></div><div class="handoff" style="margin:0">${HAND.map((h,i)=>`<div class="${i<x.hand?"done":i===x.hand?"now":""}">${h}</div>`).join("")}</div><div class="r">${rm(x.value)}<br>opens ${fmt(x.opening)}</div></div>`).join("");
 }
@@ -428,9 +433,28 @@ function renderFollow(){
   const soon=open.filter(x=>x.nextDate&&days(x.nextDate,TODAY)>=0&&days(x.nextDate,TODAY)<=7).sort((a,b)=>d(a.nextDate)-d(b.nextDate));
   $("#fuLate").innerHTML=late.map(row).join("")||`<div class="s">Nothing overdue.</div>`;
   $("#fuSoon").innerHTML=soon.map(row).join("")||`<div class="s">Nothing due this week.</div>`;
+  fit("soon");
   const stale=deals.filter(x=>x.stage==="Proposal sent"&&x.sentDate&&days(TODAY.toISOString(),x.sentDate)>=14);
   $("#fuStale").innerHTML=stale.map(x=>`<div class="row" data-open="${x.id}"><span class="dot warn"></span><div><div class="t">${x.brand}</div><div class="s">${x.route} · sent ${fmtL(x.sentDate)} · ${x.contact}</div></div><div class="r">${rm(x.value)}<br><b>${days(TODAY.toISOString(),x.sentDate)} days</b> silent</div></div>`).join("")||`<div class="s">No quotes waiting.</div>`;
 }
+
+/* A long list on the right is cut to the height of the list on its left. The button in its heading shows the rest. */
+const FIT={soon:{list:"#fuSoon",btn:"#fuMore",ref:"#fuStale",open:false},ops:{list:"#openings",btn:"#opMore",ref:"#attention",open:false}};
+function fit(k){
+  const f=FIT[k],rows=$$(f.list+" .row"),btn=$(f.btn),ref=$(f.ref);
+  rows.forEach(r=>r.hidden=false);
+  if(!ref.offsetHeight)return;
+  let cut=[];
+  if(!f.open){
+    if(matchMedia("(max-width:860px)").matches)cut=rows.slice(5);
+    else{const lim=ref.getBoundingClientRect().bottom+4;cut=rows.filter(r=>r.getBoundingClientRect().bottom>lim)}
+  }
+  cut.forEach(r=>r.hidden=true);
+  btn.hidden=!f.open&&!cut.length;
+  btn.textContent=f.open?"Show less":`Show all ${rows.length}`;
+}
+Object.keys(FIT).forEach(k=>{$(FIT[k].btn).onclick=()=>{FIT[k].open=!FIT[k].open;fit(k)}});
+addEventListener("resize",()=>Object.keys(FIT).forEach(fit));
 
 /* ---------- reports ---------- */
 function renderReports(){
