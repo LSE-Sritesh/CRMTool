@@ -101,6 +101,8 @@ h1,h2,h3{font-family:var(--body);margin:0;text-wrap:balance;line-height:1.15}
 .bar .k{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .stack{display:grid;gap:16px;min-width:0}
+.grid4{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:16px}
+.split.three{grid-template-columns:repeat(3,1fr)}
 .rate{padding:12px 14px;border-radius:var(--radius);background:var(--bg2)}
 .rate .big{font-family:var(--body);font-size:28px;font-weight:700}
 .rate .lbl{font-size:12px;color:var(--ink2)}
@@ -193,7 +195,8 @@ td .b{font-weight:600}td .s{font-size:12px;color:var(--ink2)}
   .brand{flex-direction:row;align-items:center;padding:0 8px 0 0}
   .nav{flex-direction:row}.nav button{padding:7px 10px;white-space:nowrap}.nav button svg{display:none}
   .main{padding:16px 16px 50px}
-  .grid2,.split{grid-template-columns:1fr}
+  .grid2,.grid4,.split,.split.three{grid-template-columns:1fr}
+  .grid4{grid-auto-rows:auto}
   .bar{grid-template-columns:90px 1fr 70px}
   .kv{grid-template-columns:1fr}
 }
@@ -267,14 +270,12 @@ td .b{font-weight:600}td .s{font-size:12px;color:var(--ink2)}
     <!-- REPORTS -->
     <section class="view" id="v-reports">
       <div class="topbar"><div><div class="eyebrow">Reports</div><h1>Where work comes from, and why it is lost</h1></div></div>
-      <div class="grid2">
+      <div class="grid4">
         <div class="card"><h3>Source of enquiries <span>closed and open, count</span></h3><div class="bars" id="srcBars"></div>
           <div class="callout">If most work comes from Japan HQ referrals and repeat brands, the sales job is account care, not cold outreach. The numbers should decide that, not opinion.</div></div>
         <div class="card"><h3>Why deals were lost <span>last 12 months</span></h3><div class="lost" id="lostList"></div></div>
-      </div>
-      <div class="grid2">
         <div class="card"><h3>Sector mix of open pipeline <span>RM</span></h3><div class="bars" id="sectorBars"></div></div>
-        <div class="card"><h3>Days from enquiry to decision <span>closed deals, average</span></h3><div class="split" id="cycle"></div>
+        <div class="card"><h3>Days from enquiry to decision <span>closed deals, average</span></h3><div class="split three" id="cycle"></div>
           <div class="callout">Slow decisions are usually a mall approval or a Japan HQ sign-off. Knowing which lets the team chase the right person.</div></div>
       </div>
     </section>
